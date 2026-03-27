@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detector Admin Dashboard</title>
+    <!-- FontAwesome for the icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Dashboard Layout Specific Styles */
+        body {
+            overflow: hidden;
+            /* Prevent body scroll, layout handles it */
+        }
+
+        .dashboard-layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            padding-top: 1.5rem;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-header .logo {
+            font-size: 1.2rem;
+        }
+
+        .sidebar-section {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1.2rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--accent-gradient);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
+        }
+
+        /* Smaller sub-menu items for models */
+        .sub-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .sub-nav-item:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .sub-nav-item.active {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .sub-nav-item.active::before {
+            content: "•";
+            color: var(--accent-primary);
+            position: absolute;
+            left: 1.5rem;
+            font-size: 1.5rem;
+            line-height: 0;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--error);
+            text-decoration: none;
+            padding: 0.8rem;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: var(--error-bg);
+        }
+
+        /* Main Content Area */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: var(--bg-dark);
+        }
+
+        .top-navbar {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .page-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-primary);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .content-area {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Top Summary Widgets */
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .widget-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .widget-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .widget-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .widget-info h4 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+        }
+
+        .widget-info p {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Dashboard Forms/Main Card */
+        .dashboard-main {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+            min-height: 400px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .input-group input,
+        select {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .input-group input:focus,
+        select:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        select option {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        /* Results */
+        .result-card {
+            margin-top: 2.5rem;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .result-genuine {
+            background: var(--success-bg);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15);
+        }
+
+        .result-fake {
+            background: var(--error-bg);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15);
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            margin-top: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* Batch Upload Steps */
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .steps-container::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .step {
+            text-align: center;
+            z-index: 2;
+            flex: 1;
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--bg-dark);
+            border: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .step h4 {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .step p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(56, 189, 248, 0.4);
+            border-radius: 20px;
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            background: rgba(56, 189, 248, 0.02);
+            display: block;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-primary);
+            background: rgba(56, 189, 248, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Table overrides */
+        .table-responsive {
+            overflow-x: auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.95rem;
+        }
+
+        th {
+            padding: 1.2rem 1rem;
+            border-bottom: 2px solid var(--card-border);
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.8);
+            text-align: left;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: var(--error-bg);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .alert-warning {
+            background: var(--warning-bg);
+            color: #92400e;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .alert-success {
+            background: var(--success-bg);
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .trust-strip {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            padding: 0.9rem 1.1rem;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: rgba(15, 23, 42, 0.6);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Mobile Adjustments */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100%;
+                transition: left 0.3s;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .steps-container {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .steps-container::before {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Menu</div>
+                <ul class="nav-menu">
+                    <li>
+                        <button class="nav-item {% if not active_tab or active_tab == 'single' %}active{% endif %}"
+                            onclick="openTab(event, 'single')">
+                            <i class="fa-solid fa-magnifying-glass"></i> Single Prediction
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item {% if active_tab == 'batch' %}active{% endif %}"
+                            onclick="openTab(event, 'batch')">
+                            <i class="fa-solid fa-table-list"></i> Batch Prediction
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item {% if active_tab == 'train' %}active{% endif %}"
+                            onclick="openTab(event, 'train')">
+                            <i class="fa-solid fa-brain"></i> Model Training
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item {% if active_tab == 'live' %}active{% endif %}"
+                            onclick="openTab(event, 'live')">
+                            <i class="fa-solid fa-bolt"></i> Live Prediction
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Active AI Model</div>
+                <div style="position: relative;">
+                    <a href="{{ url_for('dashboard', model='rf') }}"
+                        class="sub-nav-item {% if selected_model == 'rf' %}active{% endif %}">
+                        Random Forest
+                    </a>
+                    <a href="{{ url_for('dashboard', model='svm') }}"
+                        class="sub-nav-item {% if selected_model == 'svm' %}active{% endif %}">
+                        Support Vector Machine
+                    </a>
+                    <a href="{{ url_for('dashboard', model='nn') }}"
+                        class="sub-nav-item {% if selected_model == 'nn' %}active{% endif %}">
+                        Neural Network
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('home') }}" class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN WORKSPACE -->
+        <main class="main-wrapper">
+
+            <!-- Top Nav -->
+            <header class="top-navbar">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="page-title" id="page-title-text">Dashboard Workspace</h2>
+                </div>
+                <div class="user-profile">
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Admin User</span>
+                    <div class="user-avatar">A</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+
+                <!-- Global Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <p class="trust-strip" role="note"><i class="fa-solid fa-circle-info" style="color: var(--accent-primary);" aria-hidden="true"></i> Predictions reflect patterns in your training data and features—they are not definitive judgments about real people or accounts.</p>
+
+                <!-- Summary Widgets -->
+                <div class="widgets-grid">
+                    <div class="widget-card">
+                        <div class="widget-icon" style="color: #38bdf8; background: rgba(56, 189, 248, 0.1);"><i
+                                class="fa-solid fa-microchip"></i></div>
+                        <div class="widget-info">
+                            <h4>Current Model</h4>
+                            <p>{{ selected_model | upper }}</p>
+                        </div>
+                    </div>
+                    <div class="widget-card">
+                        <div class="widget-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i
+                                class="fa-solid fa-server"></i></div>
+                        <div class="widget-info">
+                            <h4>Model Status</h4>
+                            <p
+                                style="color: {% if model_status[selected_model] == 'Ready' %}#10b981{% else %}#f59e0b{% endif %}">
+                                {{ model_status[selected_model] }}</p>
+                        </div>
+                    </div>
+                    <div class="widget-card">
+                        <div class="widget-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><i
+                                class="fa-solid fa-shield-check"></i></div>
+                        <div class="widget-info">
+                            <h4>System Health</h4>
+                            <p>Online</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Forms -->
+                <div class="dashboard-main">
+
+                    <!-- Live Prediction View -->
+                    <div id="live" class="tab-content {% if active_tab == 'live' %}active{% endif %}">
+                        <h3 style="margin-bottom: 2rem; font-weight: 600;"><i class="fa-solid fa-bolt"
+                                style="color: var(--accent-primary);"></i> Real-Time Profile Analysis</h3>
+                        <form action="{{ url_for('predict_realtime') }}" method="POST">
+                            <input type="hidden" name="model" value="{{ selected_model }}">
+                            <div class="form-grid" style="grid-template-columns: 1fr;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label for="username">Social Media Username</label>
+                                    <div style="display: flex; gap: 15px;">
+                                        <div style="position: relative; flex: 1;">
+                                            <span
+                                                style="position: absolute; left: 15px; top: 1.1rem; color: var(--text-muted); font-size: 1.2rem;">@</span>
+                                            <input type="text" id="username" name="username" placeholder="johndoe"
+                                                value="{{ live_username | default('') }}" required
+                                                style="padding-left: 2.5rem; width: 100%;">
+                                        </div>
+                                        <button type="submit" class="btn-primary"
+                                            style="padding: 1.1rem 2rem; border-radius: 12px; height: auto; margin-top: 0;">Fetch
+                                            & Predict</button>
+                                    </div>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;"><i
+                                            class="fa-solid fa-circle-info"></i> Enter any username to mock fetch their
+                                        real-time activity metrics.</p>
+                                </div>
+                            </div>
+                        </form>
+
+                        {% if live_features %}
+                        <div
+                            style="margin-top: 2rem; padding: 2rem; background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border);">
+                            <h4 style="margin-bottom: 1.5rem; color: var(--accent-primary);"><i
+                                    class="fa-solid fa-chart-network"></i> Fetched Profile Data for @{{ live_username }}
+                            </h4>
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+                                <div
+                                    style="background: var(--bg-dark); padding: 1.2rem 1rem; border-radius: 12px; text-align: center; border: 1px solid var(--card-border);">
+                                    <div
+                                        style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Statuses</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700;">{{ live_features.statuses_count }}
+                                    </div>
+                                </div>
+                                <div
+                                    style="background: var(--bg-dark); padding: 1.2rem 1rem; border-radius: 12px; text-align: center; border: 1px solid var(--card-border);">
+                                    <div
+                                        style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Followers</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700;">{{ live_features.followers_count
+                                        }}</div>
+                                </div>
+                                <div
+                                    style="background: var(--bg-dark); padding: 1.2rem 1rem; border-radius: 12px; text-align: center; border: 1px solid var(--card-border);">
+                                    <div
+                                        style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Friends</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700;">{{ live_features.friends_count }}
+                                    </div>
+                                </div>
+                                <div
+                                    style="background: var(--bg-dark); padding: 1.2rem 1rem; border-radius: 12px; text-align: center; border: 1px solid var(--card-border);">
+                                    <div
+                                        style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Favourites</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700;">{{ live_features.favourites_count
+                                        }}</div>
+                                </div>
+                                <div
+                                    style="background: var(--bg-dark); padding: 1.2rem 1rem; border-radius: 12px; text-align: center; border: 1px solid var(--card-border);">
+                                    <div
+                                        style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Listed</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700;">{{ live_features.listed_count }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if active_tab == 'live' and result %}
+                        <div
+                            class="result-card {% if result.is_genuine %}result-genuine{% else %}result-fake{% endif %}">
+                            <h3
+                                style="font-size: 2rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                {% if result.is_genuine %}<i class="fa-solid fa-circle-check"
+                                    style="color: #10b981;"></i> Genuine Profile
+                                {% else %}<i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i> Fake
+                                Profile{% endif %}
+                            </h3>
+                            {% if confidence %}
+                            <p style="margin-top: 1rem; font-size: 1.1rem; color: var(--text-muted);">Probability
+                                (Genuine Matrix): <strong style="color: var(--text-primary);">{{ confidence.genuine }}%</strong></p>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill"
+                                    style="width: {{ confidence.genuine }}%; {% if result.is_genuine %}background: #10b981;{% else %}background: #ef4444;{% endif %}">
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Single Prediction View -->
+                    <div id="single"
+                        class="tab-content {% if not active_tab or active_tab == 'single' %}active{% endif %}">
+                        <h3 style="margin-bottom: 2rem; font-weight: 600;"><i class="fa-solid fa-user-check"
+                                style="color: var(--accent-primary);"></i> Analyze Single Profile</h3>
+                        <form action="{{ url_for('dashboard', model=selected_model) }}" method="POST">
+                            <div class="form-grid">
+                                <div class="input-group"><label for="statuses">Statuses Count</label><input
+                                        type="number" id="statuses" name="statuses" value="0" min="0" required></div>
+                                <div class="input-group"><label for="followers">Followers Count</label><input
+                                        type="number" id="followers" name="followers" value="0" min="0" required></div>
+                                <div class="input-group"><label for="friends">Friends Count</label><input type="number"
+                                        id="friends" name="friends" value="0" min="0" required></div>
+                                <div class="input-group"><label for="favourites">Favourites Count</label><input
+                                        type="number" id="favourites" name="favourites" value="0" min="0" required>
+                                </div>
+                                <div class="input-group"><label for="listed">Listed Count</label><input type="number"
+                                        id="listed" name="listed" value="0" min="0" required></div>
+                                <div class="input-group"><label for="lang">Language Code</label>
+                                    <select id="lang" name="lang">
+                                        {% if artifact and artifact.label_encoder %}
+                                        {% for l in artifact.label_encoder.classes_ %}
+                                        <option value="{{ l }}" {% if l=='en' %}selected{% endif %}>{{ l }}</option>
+                                        {% endfor %}
+                                        {% else %}
+                                        <option value="en">en</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primary"
+                                style="width: 100%; margin-top: 2rem; padding: 1.2rem; font-size: 1.1rem;">
+                                Run Prediction Engine
+                            </button>
+                        </form>
+
+                        {% if result %}
+                        <div
+                            class="result-card {% if result.is_genuine %}result-genuine{% else %}result-fake{% endif %}">
+                            <h3
+                                style="font-size: 2rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                {% if result.is_genuine %}<i class="fa-solid fa-circle-check"
+                                    style="color: #10b981;"></i> Genuine Profile
+                                {% else %}<i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i> Fake
+                                Profile{% endif %}
+                            </h3>
+                            {% if confidence %}
+                            <p style="margin-top: 1rem; font-size: 1.1rem; color: var(--text-muted);">Probability
+                                (Genuine Matrix): <strong style="color: var(--text-primary);">{{ confidence.genuine }}%</strong></p>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill"
+                                    style="width: {{ confidence.genuine }}%; {% if result.is_genuine %}background: #10b981;{% else %}background: #ef4444;{% endif %}">
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if result.explanations %}
+                            <div style="margin-top: 1.5rem; text-align: left; background: rgba(0,0,0,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--card-border);">
+                                <h4 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">
+                                    <i class="fa-solid fa-list-ul" style="color: var(--accent-primary); margin-right: 8px;"></i> Why is this {{ result.label }}?
+                                </h4>
+                                <ul style="list-style-type: none; padding-left: 0; margin-bottom: 0;">
+                                    {% for exp in result.explanations %}
+                                    <li style="margin-bottom: 0.8rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 10px;">
+                                        <i class="fa-solid fa-arrow-right" style="color: var(--accent-primary); margin-top: 4px; font-size: 0.9rem;"></i> 
+                                        <span>{{ exp }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Batch Prediction View -->
+                    <div id="batch" class="tab-content {% if active_tab == 'batch' %}active{% endif %}">
+                        <h3 style="margin-bottom: 2rem; font-weight: 600;"><i class="fa-solid fa-file-csv"
+                                style="color: var(--accent-primary);"></i> Bulk CSV Processor</h3>
+
+                        <div class="steps-container">
+                            <div class="step">
+                                <div class="step-icon">1</div>
+                                <h4>Prepare Data</h4>
+                                <p>Ensure features match schema.</p>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">2</div>
+                                <h4>Load File</h4>
+                                <p>Drag & Drop CSV below.</p>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">3</div>
+                                <h4>Execute Engine</h4>
+                                <p>Process rows instantly.</p>
+                            </div>
+                        </div>
+
+                        <form action="{{ url_for('batch_predict') }}" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="model_type" value="{{ selected_model }}">
+
+                            <label class="upload-area" for="csv_file" id="upload-label">
+                                <i class="fa-solid fa-cloud-arrow-up"
+                                    style="font-size: 3.5rem; color: var(--accent-primary); margin-bottom: 1.5rem;"></i>
+                                <h3 style="margin-bottom: 10px;">Click or Drag CSV to Upload</h3>
+                                <p id="file-nameDisplay" style="color: var(--text-muted);">Formats supported: .csv</p>
+                                <input type="file" id="csv_file" name="csv_file" class="file-input" accept=".csv"
+                                    onchange="updateFileName()">
+                            </label>
+
+                            <button type="submit" class="btn-primary"
+                                style="width: 100%; margin-top: 2rem; padding: 1.2rem; font-size: 1.1rem;">
+                                Process Batch Dataset
+                            </button>
+                        </form>
+
+                        {% if batch_results and active_tab == 'batch' %}
+                        <div style="margin-top: 3rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3 style="margin: 0; font-weight: 600;">Data Output Stream</h3>
+                                <a href="{{ csv_download_url }}" download="predictions_{{ selected_model }}.csv"
+                                    class="btn-outline"
+                                    style="padding: 0.6rem 1.2rem; display: flex; gap: 10px; align-items: center;">
+                                    <i class="fa-solid fa-download"></i> Export Full Results
+                                </a>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            {% for key in batch_results[0].keys() %}
+                                            <th>{{ key }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in batch_results %}
+                                        <tr style="transition: background 0.3s;"
+                                            onmouseover="this.style.background='rgba(0,0,0,0.05)'"
+                                            onmouseout="this.style.background='transparent'">
+                                            {% for key, value in row.items() %}
+                                            <td style="white-space: nowrap;">
+                                                {% if key == 'label' %}
+                                                <span
+                                                    style="padding: 0.3rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; 
+                                                            {% if value == 'Genuine' %}background: var(--success-bg); color: #10b981; border: 1px solid rgba(16,185,129,0.3);{% else %}background: var(--error-bg); color: #ef4444; border: 1px solid rgba(239,68,68,0.3);{% endif %}">
+                                                    {{ value }}
+                                                </span>
+                                                {% elif value is float %}
+                                                {{ "%.3f"|format(value) }}
+                                                {% else %}
+                                                {{ value }}
+                                                {% endif %}
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Train Model View -->
+                    <div id="train" class="tab-content {% if active_tab == 'train' %}active{% endif %}"
+                        style="text-align: center; padding: 2rem 0;">
+                        <i class="fa-solid fa-microchip"
+                            style="font-size: 5rem; color: var(--accent-primary); margin-bottom: 2rem; filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.4));"></i>
+                        <h2 style="font-weight: 700; margin-bottom: 1rem;">Machine Learning Compiler</h2>
+                        <p style="max-width: 600px; margin: 0 auto 2.5rem; color: var(--text-muted); line-height: 1.6;">
+                            Trigger a full re-training loop for the <strong>{{ selected_model | upper }}</strong>
+                            architecture.
+                            This accesses <code>data/users.csv</code> and <code>data/fusers.csv</code> to rebuild and
+                            overwrite the stored binary weights.
+                        </p>
+
+                        <div
+                            style="background: #f8fafc; border-radius: 16px; padding: 2rem; max-width: 500px; margin: 0 auto; text-align: left; border: 1px solid rgba(0,0,0,0.05);">
+                            <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Target Vector: <span
+                                    style="color: var(--text-primary);">{{ selected_model | upper }}</span></h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-check"
+                                    style="color: #10b981;"></i> Feature Matrix: Loaded</p>
+                            <p style="font-size: 0.9rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-check"
+                                    style="color: #10b981;"></i> Pipeline: Verified</p>
+
+                            <form action="{{ url_for('train') }}" method="POST">
+                                <input type="hidden" name="model_type" value="{{ selected_model }}">
+                                <button type="submit" class="btn-primary"
+                                    style="width: 100%; padding: 1.2rem; font-size: 1.1rem; display: flex; justify-content: center; gap: 10px;">
+                                    <i class="fa-solid fa-bolt"></i> Execute Training Run
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // Sidebar active state logic
+        function openTab(evt, tabName) {
+            var i, tabcontent, navitems;
+            // Hide all content
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            // Remove active class from buttons
+            navitems = document.getElementsByClassName("nav-item");
+            for (i = 0; i < navitems.length; i++) {
+                navitems[i].classList.remove("active");
+            }
+            // Show new content
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+
+            // Update page title
+            const titles = {
+                'single': 'Analyze Single Profile',
+                'batch': 'Bulk CSV Processor',
+                'train': 'Machine Learning Compiler',
+                'live': 'Real-Time Profile Analysis'
+            };
+            document.getElementById('page-title-text').innerText = titles[tabName];
+
+            // Close mobile sidebar if open
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth <= 900 && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        }
+
+        // Mobile Sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // File upload UI update
+        function updateFileName() {
+            var input = document.getElementById('csv_file');
+            var display = document.getElementById('file-nameDisplay');
+            if (input.files && input.files[0]) {
+                display.innerHTML = '<span style="color: var(--accent-primary); font-weight: 500;">' + input.files[0].name + '</span> ready for compilation.';
+                document.getElementById('upload-label').style.borderColor = 'var(--accent-primary)';
+                document.getElementById('upload-label').style.background = 'rgba(56, 189, 248, 0.08)';
+            }
+        }
+
+        // Auto-set title on load based on active tab
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeNav = document.querySelector('.nav-item.active');
+            if (activeNav) {
+                const text = activeNav.innerText.trim();
+                if (text.includes('Single')) document.getElementById('page-title-text').innerText = 'Analyze Single Profile';
+                if (text.includes('Batch')) document.getElementById('page-title-text').innerText = 'Bulk CSV Processor';
+                if (text.includes('Model')) document.getElementById('page-title-text').innerText = 'Machine Learning Compiler';
+                if (text.includes('Live')) document.getElementById('page-title-text').innerText = 'Real-Time Profile Analysis';
+            }
+
+            document.querySelectorAll('form').forEach(function (form) {
+                form.addEventListener('submit', function () {
+                    const btn = form.querySelector('button[type="submit"]');
+                    if (!btn || btn.disabled) return;
+                    btn.classList.add('is-loading');
+                    btn.disabled = true;
+                    const prev = btn.innerHTML;
+                    btn.dataset.prevHtml = prev;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Working…';
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

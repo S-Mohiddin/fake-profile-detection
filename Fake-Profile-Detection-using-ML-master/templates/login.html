@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Social Media Fake Profile Detector</title>
+    <!-- FontAwesome for the icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Social Media Fake Profile Detector</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('login') }}" class="btn-primary"
+                    style="background: transparent; color: var(--primary-yellow); border: 1.5px solid var(--primary-yellow);">Login</a>
+            </li>
+        </ul>
+    </nav>
+
+    <section class="login-container">
+        <div class="login-card">
+            <h2>Welcome Back</h2>
+            <form action="{{ url_for('login') }}" method="POST">
+                <div class="input-group">
+                    <label for="username">Username / Email</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn-primary login-btn">Log In</button>
+            </form>
+            <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
+                New here? <a href="{{ url_for('home') }}#how-it-works" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">See how it works</a>
+            </p>
+        </div>
+    </section>
+
+</body>
+
+</html>

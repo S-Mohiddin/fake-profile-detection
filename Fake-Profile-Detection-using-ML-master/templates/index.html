@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore fake vs genuine social profile signals using machine learning—single rows, CSV batch, or training on your own data.">
+    <title>Social Media Fake Profile Detector</title>
+    <!-- FontAwesome for the icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Social Media Fake Profile Detector</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('home') }}" style="color: var(--primary-yellow); font-weight: 600;">Home</a></li>
+            <li><a href="{{ url_for('login') }}" class="btn-primary">Login</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-left">
+            <h1>Fake <span>Social Media</span><br><span>Profile Detection</span> Using<br>Machine Learning</h1>
+            <p>Detect Fake Accounts with AI Power</p>
+            <div class="hero-buttons">
+                <!-- Using Streamlit default port 8501 assuming standard setup if integrated, or a dummy link for now -->
+                <a href="{{ url_for('dashboard') }}" class="btn-primary">Start Detection</a>
+                <a href="#how-it-works" class="btn-outline">Learn More</a>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="glass-card">
+                <i class="fa-solid fa-brain card-icon"></i>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <h3>96%</h3>
+                        <p>Accuracy</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>3</h3>
+                        <p>AI Models</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>13</h3>
+                        <p>Parameters</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 style="font-size: 2rem;">Fast</h3>
+                        <p>Real-time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="how-section" aria-labelledby="how-heading">
+        <div class="how-inner">
+            <h2 id="how-heading">How it works</h2>
+            <p class="how-lead">The app scores profiles from numeric activity and language features—similar to classic Twitter-style datasets. It does not read your messages or photos.</p>
+            <div class="how-grid">
+                <article class="how-card">
+                    <div class="how-card-icon"><i class="fa-solid fa-sliders" aria-hidden="true"></i></div>
+                    <h3>Input</h3>
+                    <p>Counts such as posts, followers, following, favourites, listed, plus a language code. You can paste numbers manually, upload a CSV, or use live fetch where configured.</p>
+                </article>
+                <article class="how-card">
+                    <div class="how-card-icon"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i></div>
+                    <h3>Models</h3>
+                    <p>Pick Random Forest, SVM, or a small neural network. Train on your <code>data/</code> CSVs when you need fresh weights.</p>
+                </article>
+                <article class="how-card">
+                    <div class="how-card-icon"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i></div>
+                    <h3>Limits</h3>
+                    <p>Scores are estimates from training data—not proof of intent. Use them as one signal alongside platform tools and common sense.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <p>Educational / research use. Do not use outputs as sole grounds for blocking or reporting accounts.</p>
+        <p class="footer-meta"><a href="{{ url_for('login') }}">Open app</a> · <a href="#how-it-works">How it works</a></p>
+    </footer>
+
+</body>
+
+</html>
